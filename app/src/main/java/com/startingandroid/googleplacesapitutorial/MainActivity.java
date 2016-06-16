@@ -32,7 +32,11 @@ import com.google.android.gms.maps.model.LatLngBounds;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+
+import static java.util.Collections.*;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -43,7 +47,8 @@ public class MainActivity extends AppCompatActivity {
     private AutoCompleteTextView myLocation;
     private static final int PLACE_PICKER_FLAG = 1;
     List<Integer> typ;
-    String new_typ;
+    String newTyp;
+    String kategorie;
 
 
     private static final LatLngBounds BOUNDS_GREATER_SYDNEY = new LatLngBounds(
@@ -60,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
                 .addApi(Places.GEO_DATA_API)
                 .addApi(AppIndex.API).build();
         /*
+        Überprüfen, ob es eine Möglichkeit gibt den Kartentyp umzustellen. z.B. auf Satellite oder Hybrid.
         mGoogleApiClient.(GoogleApiClient.MAP_TYPE_HYBRID);
         */
 
@@ -102,38 +108,47 @@ public class MainActivity extends AppCompatActivity {
                 String placename = String.format("%s", place.getName());
                 String latitude = String.valueOf(place.getLatLng().latitude);
                 String longitude = String.valueOf(place.getLatLng().longitude);
-                //String id = String.valueOf(place.getId());
+                String id = String.valueOf(place.getId());
                 String address = String.format("%s", place.getAddress());
                 List<Integer> typ = (place.getPlaceTypes());
-                String id = String.format("%s", typ.get(0));
                 /*
-                * Reflexion um über eine Array die Werte des Objektes Places.class auszulesen in dem die
+                * Todo-Liste sortieren um mit der Methode hasNext() alle Kategorie-Werte in
+                * Variablennamen zu überführen. Momentan wir nur der erste Eintrag bearbeitet.
+                */
+                String newTyp = String.format("%s", typ.get(0));
+                /*
+                * Reflexion um über eine Array die konstanen Namen des Objektes Places.class auszulesen in dem die
                 * Kategorien stehen in der Form int Name = Wert;
                 */
                 Class<?> c = Place.class;
-                    for ( Field publicField : c.getDeclaredFields()) {
-                        String fieldName = publicField.getName();
-                        String fieldType = publicField.getType().getName();
-                        Object fieldValue = null;
-                        try {
-                            fieldValue = publicField.get(null);
-                            if(fieldValue == typ) {
-                                new_typ = (String) fieldValue;
-
-                            }
-                            //System.out.println(fieldValue);
-                        }
-                        catch (IllegalAccessException e) {
-                            e.printStackTrace();
-                        }
-                        System.out.printf( " %s %s %n", fieldType, fieldName);
-                        System.out.print("ID: "+fieldValue);
+                for ( Field publicField : c.getDeclaredFields()) {
+                    String fieldName = publicField.getName();
+                    String fieldType = publicField.getType().getName();
+                    Object fieldValue = null;
+                    try {
+                        fieldValue = publicField.get(null);
+                    }
+                    catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                    String compare = String.format("%s", fieldValue);
+                    if(compare.equals(newTyp)) {
+                        kategorie = fieldName;
+                        //System.out.println("***" + compare + "***");
+                    }
+                    /*
+                    * Test-Ausgabe in der Konsole zur Überprüfung der Richtigkeit der Konstanten aus
+                    * der Klasse Place.class Bsp.: 1003 TYPE_ADMINISTRATIVE_AREA_LEVEL_3
+                    * System.out.printf( " %s %s %n",fieldValue, fieldName);
+                    */
                 }
 
-                stBuilder.append("ID: ");
-                stBuilder.append(id);
+
+                stBuilder.append("Typ: ");
+                stBuilder.append(typ);
+                stBuilder.append("\n");
                 stBuilder.append("Kategorie: ");
-                stBuilder.append(new_typ);
+                stBuilder.append(kategorie);
                 stBuilder.append("\n");
                 stBuilder.append("Name: ");
                 stBuilder.append(placename);
